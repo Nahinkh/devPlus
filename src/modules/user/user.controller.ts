@@ -5,6 +5,13 @@ import { sendResponse } from "../../utils/sendResponse";
 const createUser = async (req: Request, res: Response) => {
     try {
         const result = await userService.registerUserIntoDB(req.body);
+        if(!result?.rows[0]){
+            return sendResponse(res, {
+                statusCode: 400,
+                status: "error",
+                message: "Email already exists",
+            });
+        }
         sendResponse(res,{
             statusCode: 201,
             status: "success",
