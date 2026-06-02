@@ -1,5 +1,6 @@
 import express from "express";
-import { userRoute } from "./modules/user/user.route";
+import { userRoute } from "./modules/auth/auth.route";
+
 
 const app = express();
 app.use(express.json());
