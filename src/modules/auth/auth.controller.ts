@@ -32,7 +32,6 @@ const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
         const result = await userService.loginUserIntoDB(email, password);
-        console.log(result.user)
         const { accessToken } = result;
         res.cookie("accessToken", accessToken, {
             secure:false,
