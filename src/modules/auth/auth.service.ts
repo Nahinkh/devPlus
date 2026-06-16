@@ -1,12 +1,14 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../db";
 import type { IUSER } from "./auth.interface";
+import jwt from "jsonwebtoken";
+import envConfig from "../../config/dotEnv.config";
 
 // Register a new user into the database
 const registerUserIntoDB = async (userData: IUSER) => {
   try {
     const { name, email, password, role } = userData;
-    const hashedPassword = await bcrypt.hash(password, 12); // Replace with actual hashing logic
+    const hashedPassword = await bcrypt.hash(password, 12); 
 
     const result = await pool.query(
       `
@@ -16,14 +18,12 @@ const registerUserIntoDB = async (userData: IUSER) => {
         `,
       [name, email, hashedPassword, role],
     );
-    console.log(result);
-
+    delete result.rows[0].password;
     if (result?.rows?.length === 0) {
       throw new Error("User creation failed");
     }
 
     return result;
-    console.log(userData);
   } catch (error) {
     console.log(error);
   }
@@ -47,7 +47,17 @@ const loginUserIntoDB = async (email: string, password: string) => {
   if (!matchPass) {
     throw new Error("Invalid password");
   }
-  return result;
+  const jwtPayload = {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+
+  }
+  const accessToken = await jwt.sign(jwtPayload,envConfig.jwt_secret as string,{expiresIn: "1d"});
+  return {accessToken, user: jwtPayload};
+  
 };
 
 export const userService = {

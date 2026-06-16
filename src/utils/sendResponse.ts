@@ -2,10 +2,11 @@ import type { Response } from "express";
 
 type TResponse = {
     statusCode: number;
-    status: string;
+    status: string | boolean;
     message: string;
     data?: any;
     error?: any;
+    token?: string;
 }
 
 export const sendResponse = (res: Response, data: TResponse) => {

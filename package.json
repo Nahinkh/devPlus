@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Nahinkh/devPlus#readme",
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
     "tsx": "^4.22.3"
   },
