@@ -43,7 +43,23 @@ const getAllIssues = async (req:Request,res:Response)=>{
     }
 }
 
+const getIssueById = async (req:Request,res:Response)=>{
+    try {
+        const id = Number(req.params.id);
+        const result = await issueService.getSingleIssue(id);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error fetching issue by ID:", error);
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while fetching the issue.",
+        });
+
+    }
+}
+
 export const issueController = {
     createIssues
     ,getAllIssues
+    ,getIssueById
 }

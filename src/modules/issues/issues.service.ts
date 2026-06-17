@@ -87,9 +87,29 @@ const getAllIssuesFromDB = async (sort:string ="newest",type?:string,status?:str
   } catch (error) {
     console.error("Error fetching issues:", error);
   }
+};
+
+const getSingleIssueFromDB = async (issueId: number) => {
+  try {
+    const query = await pool.query("SELECT * FROM issues WHERE id = $1", [issueId]);
+    if (query.rows.length === 0) {
+      throw new Error("Issue not found");
+    }
+    const issue = query.rows[0];
+    const userIssueQuery = await pool.query("SELECT id, name, email FROM users WHERE id = $1", [issue.reporter_id]);
+    const result = userIssueQuery.rows[0];
+    return {
+      ...issue,
+      reporter: result
+    }
+  } catch (error) {
+    console.error("Error fetching issue:", error);
+    throw new Error("Error fetching issue: " + (error as Error).message);
+  }
 }
 
 export const issueService = {
   createIssues: createIssuesInDB,
   getAllIssues: getAllIssuesFromDB
+  ,getSingleIssue: getSingleIssueFromDB
 }
