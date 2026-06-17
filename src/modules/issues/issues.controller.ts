@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { issueService } from "./issues.service";
 
+
 const createIssues=async(req:Request,res:Response)=>{
     try {
         const reporterId = req.user?.id; // Assuming you have user authentication and the user ID is available in req.user
@@ -58,8 +59,44 @@ const getIssueById = async (req:Request,res:Response)=>{
     }
 }
 
+const updateIssue = async (req:Request,res:Response)=>{
+    try {
+        const id = Number(req.params.id);
+        const payload = req.body;
+        const user = req.user as { id: number; role: string };
+        const result = await issueService.updateIssue(id, payload, user);
+        return res.status(200).json(result);
+    } catch (error) {
+      console.log(error)  
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while updating the issue.",
+            error: (error as Error).message
+        })
+    }
+}
+
+const deleteIssue = async (req:Request,res:Response)=>{
+    try {
+        const id = Number(req.params.id);
+        const user = req.user as { id: number; role: string };
+        const result = await issueService.deleteIssue(id, user.role);
+        console.log(result)
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Error deleting issue:", error);
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while deleting the issue.",
+            error: (error as Error).message
+        });
+    }
+}
+
 export const issueController = {
     createIssues
     ,getAllIssues
     ,getIssueById
+    ,updateIssue
+    ,deleteIssue
 }
