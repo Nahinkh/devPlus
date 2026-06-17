@@ -34,7 +34,7 @@ const getAllIssuesFromDB = async (
   status?: string,
 ) => {
   try {
-    let query = "SELECT * FROM issues";
+    let query = `SELECT * FROM issues`;
     let conditions: string[] = [];
     let values: any[] = [];
 
@@ -50,7 +50,7 @@ const getAllIssuesFromDB = async (
     }
 
     if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ");
+      query += ` WHERE ${conditions.join(" AND ")}`;
     }
 
     // Add sorting
@@ -68,29 +68,29 @@ const getAllIssuesFromDB = async (
     const result = await pool.query(query, values);
     const issues = result.rows;
     if (issues.length === 0) {
-      return {
-        status: false,
-        message: "No issues found.",
-        data: [],
-      };
+      throw new Error("No issues found");
     }
     // Extract unique reporter IDs from the issues
-    const repoterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
-    const reporterQuery = `SELECT id, name, email FROM users WHERE id = ANY($1)`;
-    const reporterResult = await pool.query(reporterQuery, [repoterIds]);
+    const reporterIds = [...new Set(issues.map((issue) => issue.reporter_id))];
+    const reporterResult = await pool.query(`SELECT id, name, email, role FROM users WHERE id = ANY($1)`, [reporterIds]);
     const reporters = reporterResult.rows;
     const issuesWithReporter = issues.map((issue) => {
       const reporter = reporters.find(
         (reporter) => reporter.id === issue.reporter_id,
       );
-      return { ...issue, reporter };
+      return {
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        status: issue.status,
+        reporter: reporter ? { id: reporter.id, name: reporter.name, role: reporter.role } : null,
+        created_at: issue.created_at,
+        updated_at: issue.updated_at,
+      }
     });
 
-    return {
-      status: true,
-      message: "Issues fetched successfully.",
-      data: issuesWithReporter,
-    };
+    return issuesWithReporter;
   } catch (error) {
     console.error("Error fetching issues:", error);
   }
@@ -98,7 +98,7 @@ const getAllIssuesFromDB = async (
 
 const getSingleIssueFromDB = async (issueId: number) => {
   try {
-    const query = await pool.query("SELECT * FROM issues WHERE id = $1", [
+    const query = await pool.query(`SELECT * FROM issues WHERE id = $1`, [
       issueId,
     ]);
     if (query.rows.length === 0) {
@@ -106,16 +106,21 @@ const getSingleIssueFromDB = async (issueId: number) => {
     }
     const issue = query.rows[0];
     const userIssueQuery = await pool.query(
-      "SELECT id, name, email FROM users WHERE id = $1",
+      "SELECT id, name, role FROM users WHERE id = $1",
       [issue.reporter_id],
     );
     const result = userIssueQuery.rows[0];
     return {
-      ...issue,
-      reporter: result,
+      id: issue.id,
+      title: issue.title,
+      description: issue.description,
+      type: issue.type,
+      status: issue.status,
+      reporter: result ? { id: result.id, name: result.name, role: result.role } : null,
+      created_at: issue.created_at,
+      updated_at: issue.updated_at,
     };
   } catch (error) {
-    console.error("Error fetching issue:", error);
     throw new Error("Error fetching issue: " + (error as Error).message);
   }
 };
