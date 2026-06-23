@@ -50,7 +50,6 @@ const loginUser = async (req: Request, res: Response) => {
         });
         
     } catch (error: any) {
-        console.log(error);
         sendResponse(res, {
             statusCode: 400,
             status: "error",
