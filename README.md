@@ -7,7 +7,7 @@ DevPulse is a collaborative issue-tracking platform built for software developme
 ## 🌐 Live API
 
 **Backend URL:**
-`https://express-dev-plus.vercel.app/](https://dev-plus-iuc3h776u-nahinkhs-projects.vercel.app/`
+`https://dev-plus-iuc3h776u-nahinkhs-projects.vercel.app/`
 
 ---
 
